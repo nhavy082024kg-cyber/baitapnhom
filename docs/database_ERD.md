@@ -24,7 +24,7 @@ Sơ đồ ERD mô tả cấu trúc các thực thể và mối quan hệ ràng b
 ### 3.2. Business Entities
 *   **Products:** Quản lý danh mục nước hoa của từng nhãn hàng. Chứa thông tin về giá mỗi lần xịt (`price_per_spray`), mùi hương (`fragrance_notes` dạng JSONB), và trạng thái khả dụng[cite: 102, 105].
 *   **Locations & Machines:** Quản lý các điểm đặt Kiosk và thông tin cấu hình của từng thiết bị vật lý thuộc về nhãn hàng[cite: 102, 105].
-*   **Vận hành Kiosk (Orders, Dispense, Slots):** Lưu trữ lịch sử đơn hàng, các lệnh phun nước hoa (Dispense Command), cấu hình khay chứa (Slots), và nhật ký thay bình (Refill Log)[cite: 105].
+*   **Vận hành Kiosk (Orders, Dispense, Slots):** Lưu trữ lịch sử đơn hàng, các lệnh xịt nước hoa (Dispense Command), cấu hình khay chứa (Slots), và nhật ký thay bình (Refill Log)[cite: 105].
 
 ## 4. Các Ràng buộc Không gian Dữ liệu và Toàn vẹn 
 Hệ thống thiết lập các ràng buộc chặt chẽ ngay tại tầng CSDL để ngăn chặn sai sót:

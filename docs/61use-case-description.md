@@ -9,7 +9,7 @@ Mô tả toàn bộ 61 use case
 | UC-01 | Đăng nhập | Mọi người dùng nhân sự | Người dùng nhập tài khoản và mật khẩu. Hệ thống xác thực, xác định brand và vai trò rồi tạo phiên làm việc, đồng thời ghi nhận lần đăng nhập. Tài khoản bị khóa hoặc brand bị tạm ngưng thì bị từ chối. |
 | UC-02 | Đăng xuất / thu hồi phiên | Mọi người dùng nhân sự; Platform Super Administrator | Người dùng kết thúc phiên làm việc của mình. Super Admin có thể thu hồi phiên đang hoạt động khi phát hiện bất thường. |
 | UC-03 | Đặt lại mật khẩu | Mọi người dùng nhân sự | Người dùng yêu cầu đặt lại mật khẩu qua email đã đăng ký. Hệ thống gửi liên kết có thời hạn, cho phép đặt mật khẩu mới và vô hiệu các phiên cũ. |
-| UC-04 | Xác thực bổ sung | Brand Administrator, Operations Manager, Technician, Inventory Staff | Yêu cầu người dùng xác nhận lại danh tính (mật khẩu hoặc mã xác thực) trước các thao tác nhạy cảm như hoàn tiền, điều chỉnh tồn kho, phun thử, đổi cấu hình slot. |
+| UC-04 | Xác thực bổ sung | Brand Administrator, Operations Manager, Technician, Inventory Staff | Yêu cầu người dùng xác nhận lại danh tính (mật khẩu hoặc mã xác thực) trước các thao tác nhạy cảm như hoàn tiền, điều chỉnh tồn kho, xịt thử, đổi cấu hình slot. |
 
 ## 2.2 Quản trị nền tảng và brand
 
@@ -38,11 +38,11 @@ Mô tả toàn bộ 61 use case
 | UC-20 | Xem danh sách mùi hương | Customer / Kiosk User | Khách xem danh sách mùi hương đang có trên máy cùng thông tin chi tiết (tên, mô tả, giá, tình trạng còn hàng). |
 | UC-21 | Chọn mùi, xác nhận giá và tạo order | Customer / Kiosk User | Khách chọn một mùi hương và xác nhận giá. Hệ thống tạo order ở trạng thái chờ thanh toán, cố định mùi và giá tại thời điểm đó. |
 | UC-22 | Thanh toán bằng QR | Customer / Kiosk User, Payment Provider | Hệ thống hiển thị mã QR động gắn với order. Khách quét và thanh toán; hệ thống theo dõi đến khi thanh toán thành công, thất bại hoặc hết hạn. |
-| UC-23 | Nhận một lần phun | Customer / Kiosk User, IoT Device (Kiosk) | Sau khi backend xác nhận thanh toán, máy phun đúng một lần theo order và báo kết quả cho hệ thống và khách. |
-| UC-24 | Xử lý khi đã trả tiền nhưng phun lỗi | Customer / Kiosk User | Khi thanh toán thành công nhưng phun thất bại hoặc không chắc chắn, kiosk hướng dẫn khách và chuyển giao dịch sang quy trình review hoặc hoàn tiền. Không tự phun lại. |
+| UC-23 | Nhận một lần xịt | Customer / Kiosk User, IoT Device (Kiosk) | Sau khi backend xác nhận thanh toán, máy xịt đúng một lần theo order và báo kết quả cho hệ thống và khách. |
+| UC-24 | Xử lý khi đã trả tiền nhưng xịt lỗi | Customer / Kiosk User | Khi thanh toán thành công nhưng xịt thất bại hoặc không chắc chắn, kiosk hướng dẫn khách và chuyển giao dịch sang quy trình review hoặc hoàn tiền. Không tự xịt lại. |
 | UC-25 | Quét QR sản phẩm | Customer / Kiosk User | Khách quét mã QR trên sản phẩm để xem thông tin và khuyến mãi liên quan. |
 | UC-26 | Xác minh webhook thanh toán | Payment Provider | Hệ thống nhận webhook từ nhà cung cấp thanh toán, kiểm tra chữ ký, mã tham chiếu, số tiền, tiền tệ, trạng thái và chặn xử lý trùng trước khi cập nhật order. |
-| UC-27 | Gửi lệnh phun và nhận kết quả | IoT Device (Kiosk) | Hệ thống tạo lệnh phun có định danh, hạn dùng và chữ ký, gửi tới máy. Máy xác nhận, thực thi và trả kết quả; quá thời gian thì đánh dấu không chắc chắn. |
+| UC-27 | Gửi lệnh xịt và nhận kết quả | IoT Device (Kiosk) | Hệ thống tạo lệnh xịt có định danh, hạn dùng và chữ ký, gửi tới máy. Máy xác nhận, thực thi và trả kết quả; quá thời gian thì đánh dấu không chắc chắn. |
 | UC-28 | Xem hướng dẫn trải nghiệm | Customer / Kiosk User | Kiosk hiển thị hướng dẫn cách nhận và cảm nhận mùi hương sau khi thanh toán. |
 
 ## 2.4 Vận hành và giao dịch
@@ -53,7 +53,7 @@ Mô tả toàn bộ 61 use case
 | UC-30 | Giám sát trạng thái máy và slot | Operations Manager | Theo dõi trạng thái, cảnh báo, tồn kho của các máy và slot trong brand. |
 | UC-31 | Bật / tắt máy hoặc slot từ xa | Operations Manager, Brand Administrator | Bật hoặc tắt một máy hay một slot từ xa, ví dụ khi có sự cố hoặc để ngừng bán tạm thời. |
 | UC-32 | Xem và tìm kiếm giao dịch | Operations Manager | Xem danh sách giao dịch và tìm kiếm theo mã, thời gian, máy, trạng thái. |
-| UC-33 | Xử lý giao dịch lỗi | Operations Manager | Xử lý giao dịch đã trả tiền nhưng phun lỗi hoặc chưa xác nhận: retry có kiểm soát, đưa vào review hoặc từ chối. Mọi thao tác ghi lý do. |
+| UC-33 | Xử lý giao dịch lỗi | Operations Manager | Xử lý giao dịch đã trả tiền nhưng xịt lỗi hoặc chưa xác nhận: retry có kiểm soát, đưa vào review hoặc từ chối. Mọi thao tác ghi lý do. |
 | UC-34 | Hoàn tiền | Operations Manager, Payment Provider | Thực hiện hoàn tiền cho giao dịch lỗi qua nhà cung cấp thanh toán. Cần xác thực bổ sung và ghi audit log. |
 | UC-35 | Quản lý cảnh báo | Operations Manager | Xem, xác nhận, giao việc, đóng và mở lại các cảnh báo vận hành. |
 | UC-36 | Tạo và giao ticket bảo trì | Operations Manager | Tạo ticket bảo trì, đặt mức ưu tiên và giao cho kỹ thuật viên. |
@@ -68,7 +68,7 @@ Mô tả toàn bộ 61 use case
 | UC-40 | Xem máy, cảnh báo và ticket được giao | Technician | Kỹ thuật viên xem danh sách máy, cảnh báo và ticket bảo trì được giao cho mình. |
 | UC-41 | Bật chế độ bảo trì | Technician | Chuyển máy sang chế độ bảo trì để chặn order mới trong khi sửa chữa. |
 | UC-42 | Chẩn đoán máy / slot | Technician, IoT Device (Kiosk) | Chạy chẩn đoán trên máy hoặc slot để xác định nguyên nhân lỗi. |
-| UC-43 | Phun thử (test spray) | Technician, IoT Device (Kiosk) | Phun thử để kiểm tra bơm, van, lưu lượng. Cần xác thực bổ sung; lần phun thử được ghi riêng và không trừ tồn kho bán hàng. |
+| UC-43 | xịt thử (test spray) | Technician, IoT Device (Kiosk) | xịt thử để kiểm tra bơm, van, lưu lượng. Cần xác thực bổ sung; lần xịt thử được ghi riêng và không trừ tồn kho bán hàng. |
 | UC-44 | Thực hiện bảo trì theo checklist | Technician | Thực hiện và ghi nhận từng bước bảo trì, sửa chữa theo checklist. |
 | UC-45 | Kiểm tra sau bảo trì | Technician, IoT Device (Kiosk) | Chạy kiểm tra bắt buộc sau bảo trì; chỉ khi đạt máy mới được hoạt động trở lại. |
 | UC-46 | Đóng ticket bảo trì | Technician | Đóng ticket sau khi đã ghi kết quả bảo trì và kiểm tra đạt. |
@@ -94,6 +94,6 @@ Mô tả toàn bộ 61 use case
 | UC-56 | Xác thực thiết bị | IoT Device (Kiosk) | Thiết bị đăng ký và xác thực danh tính khi kết nối; thiết bị chưa đăng ký hoặc đã bị thu hồi bị từ chối. |
 | UC-57 | Gửi sự kiện và mã lỗi thiết bị | IoT Device (Kiosk) | Máy gửi sự kiện, mã lỗi và cảnh báo phần cứng lên hệ thống. |
 | UC-58 | Nhận và xác thực lệnh điều khiển | IoT Device (Kiosk) | Máy kiểm tra chữ ký, hạn dùng và mã lệnh; từ chối lệnh không hợp lệ hoặc đã dùng. |
-| UC-59 | Kiểm tra điều kiện an toàn trước khi phun | IoT Device (Kiosk) | Máy kiểm tra các điều kiện an toàn (cửa, nhiệt độ, lỗi phần cứng, tồn kho, trạng thái) trước khi phun; không đạt thì không phun. |
+| UC-59 | Kiểm tra điều kiện an toàn trước khi xịt | IoT Device (Kiosk) | Máy kiểm tra các điều kiện an toàn (cửa, nhiệt độ, lỗi phần cứng, tồn kho, trạng thái) trước khi phun; không đạt thì không phun. |
 | UC-60 | Dừng khẩn cấp và khóa cơ cấu khi lỗi | IoT Device (Kiosk), Operations Manager, Technician | Dừng ngay bơm và van, khóa slot hoặc máy theo mức lỗi. Mở khóa cần người có quyền, xác thực bổ sung và kiểm tra sau bảo trì đạt. |
 | UC-61 | Lưu sự kiện khi mất mạng và đồng bộ lại | IoT Device (Kiosk) | Máy lưu sự kiện cục bộ khi mất kết nối và gửi lại đầy đủ khi có mạng. |
