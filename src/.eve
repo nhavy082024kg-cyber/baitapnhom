@@ -1,0 +1,15 @@
+# Flask settings
+FLASK_ENV=development
+SECRET_KEY=your_secret_key
+
+# MySQL settings
+DB_USER=root
+DB_PASSWORD=12345
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_NAME=scentstation
+
+# Database connection
+DATABASE_URI=mysql+pymysql://12345@localhost:3306/scentstation?charset=utf8mb4
+
+   
