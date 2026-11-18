@@ -29,7 +29,12 @@ class TokenService(ITokenService):
 
     def decode(self, token: str) -> dict:
         try:
-            return jwt.decode(token, self.secret_key, algorithms=["HS256"])
+           return jwt.decode(
+    token,
+    self.secret_key,
+    algorithms=["HS256"],
+    options={"verify_exp": False}
+)
         except jwt.PyJWTError:
             raise UnauthorizedException("Invalid or expired token")
 
