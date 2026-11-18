@@ -118,9 +118,12 @@ class AuthService:
         self.uow.commit()
 
         return {
-            "token": token,
-            "expires_at": expires_at,
-        }
+    "token": token,
+    "expires_at": expires_at,
+    "user": user,
+    "roles": self.users.get_role_codes(user.id),
+    "permissions": sorted(self.users.get_permission_codes(user.id)),
+}
 
     def authenticate(self, token: str) -> AuthContext:
         """Validate JWT, session and account status."""
