@@ -121,3 +121,5 @@ curl -X POST -H "Content-Type: application/json" \
 # 4. Simulator nhận lệnh, xịt, báo kết quả; kiosk poll:
 curl -H "X-Device-Serial: KIOSK-001" -H "X-Device-Secret: $SECRET" localhost:9999/api/v1/kiosk/orders/<order_code>
 ```
+
+
