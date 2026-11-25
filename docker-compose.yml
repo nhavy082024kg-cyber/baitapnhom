@@ -1,0 +1,33 @@
+# MySQL + backend:   docker compose up --build      ->  http://localhost:9999/docs
+# Change the secrets below before showing this outside your own computer.
+services:
+  db:
+    image: mysql:8.0
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: scentstation
+    volumes:
+      - scentstation_mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-ppassword"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  api:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "9999:9999"
+    environment:
+      DATABASE_URI: "mysql+pymysql://root:password@db:3306/scentstation?charset=utf8mb4"
+      SECRET_KEY: "change-me-to-a-long-random-string-at-least-32-chars"
+      DEVICE_MASTER_KEY: "change-me-device-master-key"
+      PAYMENT_WEBHOOK_SECRET: "change-me-webhook-secret"
+      SEED_SUPER_ADMIN_EMAIL: "admin@scentstation.local"
+      SEED_SUPER_ADMIN_PASSWORD: "Admin@12345"
+      MOCK_PAYMENT_ENABLED: "true"
+volumes:
+  scentstation_mysql:
