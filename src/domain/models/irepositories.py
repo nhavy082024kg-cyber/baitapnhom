@@ -13,7 +13,7 @@ from domain.models.machine import Machine, Slot
 from domain.models.order import Order, OrderStatusHistory, Payment, Refund, WebhookEvent
 from domain.models.tenant import Tenant
 from domain.models.user import User, UserSession
-
+from domain.models.maintenance import ChecklistItem, MaintenanceTicket
 
 class IUnitOfWork(ABC):
     """One request = one transaction. Services call commit() once at the end of a use case."""
@@ -300,3 +300,33 @@ class IAuditRepository(ABC):
     @abstractmethod
     def search(self, tenant_id: Optional[int], action: Optional[str] = None,
                order_id: Optional[int] = None, limit: int = 100) -> List[AuditLog]: ...
+
+class ITicketRepository(ABC):
+    @abstractmethod
+    def add(self, ticket: MaintenanceTicket) -> MaintenanceTicket: ...
+
+    @abstractmethod
+    def get(self, tenant_id: int, ticket_id: int) -> Optional[MaintenanceTicket]: ...
+
+    @abstractmethod
+    def find_by_alert(self, alert_id: int) -> Optional[MaintenanceTicket]: ...
+
+    @abstractmethod
+    def update(self, ticket: MaintenanceTicket) -> MaintenanceTicket: ...
+
+    @abstractmethod
+    def list(self, tenant_id: int, status: Optional[str] = None,
+             machine_id: Optional[int] = None, assigned_to: Optional[int] = None,
+             limit: int = 100) -> List[MaintenanceTicket]: ...
+
+    @abstractmethod
+    def add_item(self, item: ChecklistItem) -> ChecklistItem: ...
+
+    @abstractmethod
+    def get_item(self, tenant_id: int, item_id: int) -> Optional[ChecklistItem]: ...
+
+    @abstractmethod
+    def list_items(self, ticket_id: int) -> List[ChecklistItem]: ...
+
+    @abstractmethod
+    def update_item(self, item: ChecklistItem) -> ChecklistItem: ...

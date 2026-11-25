@@ -3,6 +3,7 @@ from flask import Blueprint, g, request
 from api.middleware import login_required
 from api.requests import validate_json
 from api.responses import ok
+from api.schemas.ops import AdjustBottleSchema
 from api.schemas.inventory import CreateBatchSchema, InstallBottleSchema, RegisterBottleSchema
 from dependency_container import container
 
@@ -45,3 +46,11 @@ def list_bottles():
 def install_bottle(slot_id):
     """Install (or replace) the bottle of a slot. Rejects a wrong fragrance / expired bottle."""
     return ok(container.inventory_service().install_bottle(g.ctx, slot_id, **g.json))
+
+
+@inventory_bp.route("/bottles/<int:bottle_id>/adjust", methods=["POST"])
+@login_required
+@validate_json(AdjustBottleSchema)
+def adjust_bottle(bottle_id):
+    """Manual stock correction: needs a reason and a recent step-up (POST /auth/step-up)."""
+    return ok(container.inventory_service().adjust_bottle(g.ctx, bottle_id, **g.json))

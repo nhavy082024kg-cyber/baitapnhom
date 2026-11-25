@@ -15,3 +15,9 @@ if __name__ == "__main__":
 #    $env:DATABASE_URI = "mysql+pymysql://root:12345@127.0.0.1:3306/scentstation?charset=utf8mb4"
 #  python src/app.py
 #   http://localhost:9999/docs
+
+# $env:DATABASE_URI = "mysql+pymysql://root:12345@127.0.0.1:3306/scentstation?charset=utf8mb4"
+#$env:SEED_SUPER_ADMIN_EMAIL = "admin@scentstation.local"
+# $env:SEED_SUPER_ADMIN_PASSWORD = "Admin@12345"
+#$env:MOCK_PAYMENT_ENABLED = "true"
+#python src/app.py

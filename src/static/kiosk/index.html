@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>ScentStation Kiosk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root { --bg:#1C1A1F; --card:#28252D; --line:#3A3640; --text:#FAF7F2; --muted:#BDB8C2; --gold:#B08D57; --warn:#E0B25A; --ok:#4FB38A; --bad:#E0675B; }
+  * { box-sizing: border-box; }
+  html, body { margin:0; height:100%; background:#000; color:var(--text); font-family:'Inter',sans-serif; -webkit-tap-highlight-color:transparent; user-select:none; }
+  #app { height:100%; max-width:1080px; margin:0 auto; background:var(--bg); position:relative; overflow:hidden; }
+  section { display:none; height:100%; padding:5vh 6vw; flex-direction:column; gap:3vh; }
+  section.on { display:flex; }
+  .brand { font-size:clamp(12px,1.6vw,22px); letter-spacing:.3em; text-transform:uppercase; color:var(--gold); }
+  h1 { font-family:'Playfair Display',serif; font-weight:500; margin:0; line-height:1.1; font-size:clamp(34px,7vw,92px); }
+  h2 { font-family:'Playfair Display',serif; font-weight:500; margin:0; font-size:clamp(28px,5.5vw,72px); }
+  p { margin:0; color:var(--muted); font-size:clamp(16px,2.6vw,32px); line-height:1.45; }
+  .center { align-items:center; justify-content:center; text-align:center; }
+  .btn { display:flex; align-items:center; justify-content:center; border:0; border-radius:999px; background:var(--gold); color:var(--bg); font:600 clamp(20px,3.6vw,44px) 'Inter',sans-serif; min-height:clamp(64px,7.3vh,140px); padding:0 6vw; cursor:pointer; width:100%; max-width:760px; }
+  .btn.ghost { background:transparent; color:var(--text); border:2px solid #5A5560; font-weight:500; font-size:clamp(16px,2.6vw,32px); min-height:clamp(52px,5.6vh,108px); }
+  .btn:active { transform:scale(.98); }
+  .row { display:flex; justify-content:space-between; align-items:center; gap:2vw; }
+  .grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:2.5vh 3vw; flex:1; align-content:start; overflow:auto; }
+  .card { background:var(--card); border:2px solid var(--line); border-radius:32px; padding:3vh 3vw; display:flex; flex-direction:column; gap:1.5vh; text-align:left; color:inherit; font:inherit; cursor:pointer; min-height:28vh; }
+  .card:active { border-color:var(--gold); }
+  .card .name { font-family:'Playfair Display',serif; font-size:clamp(24px,4.4vw,48px); line-height:1.1; }
+  .card .notes { color:var(--muted); font-size:clamp(14px,2.3vw,26px); flex:1; }
+  .card .foot { display:flex; justify-content:space-between; align-items:center; }
+  .price { color:var(--gold); font-weight:600; font-size:clamp(20px,3.4vw,38px); }
+  .tag { color:var(--warn); font-size:clamp(13px,2vw,24px); font-weight:500; }
+  .bottle { width:clamp(50px,9vw,110px); }
+  .panel { background:var(--card); border-radius:28px; padding:3vh 3vw; }
+  .panel b { color:var(--gold); font-weight:600; display:block; margin-bottom:1vh; font-size:clamp(14px,2.2vw,26px); }
+  .notes3 { display:grid; grid-template-columns:repeat(3,1fr); gap:2vw; }
+  .qr { background:#fff; padding:2.5vh; border-radius:28px; display:inline-flex; }
+  .qr canvas, .qr img { display:block; }
+  .qrtext { word-break:break-all; font-size:clamp(11px,1.6vw,18px); color:#222; max-width:36vh; }
+  .status { display:inline-block; padding:.8vh 2.4vw; border-radius:999px; background:var(--line); font-size:clamp(14px,2.4vw,28px); }
+  .spinner { width:12vh; height:12vh; border:8px solid var(--line); border-top-color:var(--gold); border-radius:50%; animation:spin 1s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .icon { width:20vh; height:20vh; }
+  .muted { color:var(--muted); }
+  .err { color:var(--bad); }
+  input { width:100%; padding:2vh 2vw; border-radius:16px; border:2px solid #5A5560; background:var(--card); color:var(--text); font:inherit; font-size:clamp(16px,2.4vw,28px); user-select:text; }
+  label { color:var(--muted); font-size:clamp(14px,2vw,24px); }
+  .dev { position:absolute; right:12px; bottom:12px; font-size:12px; color:var(--muted); opacity:.8; }
+  .dev button { font-size:14px; padding:8px 12px; border-radius:8px; border:1px solid var(--gold); background:transparent; color:var(--gold); cursor:pointer; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <section id="s-config" class="center">
+    <div class="brand">ScentStation</div>
+    <h2>Cài đặt máy</h2>
+    <p>Nhập mã máy và khóa thiết bị (device secret) do quản trị viên cấp.</p>
+    <div style="width:100%;max-width:640px;display:flex;flex-direction:column;gap:1.5vh;text-align:left">
+      <label for="cfg-serial">Mã máy (serial)</label><input id="cfg-serial" autocomplete="off">
+      <label for="cfg-secret">Device secret</label><input id="cfg-secret" type="password" autocomplete="off">
+    </div>
+    <button class="btn" id="cfg-save">Lưu và bắt đầu</button>
+    <p class="err" id="cfg-err"></p>
+  </section>
+
+  <section id="s-idle" class="center">
+    <div class="brand" data-brand>ScentStation</div>
+    <p>Trải nghiệm hương thơm tại điểm bán</p>
+    <svg class="bottle" style="width:min(30vw,260px);height:auto" viewBox="0 0 120 200" aria-hidden="true">
+      <defs>
+        <linearGradient id="cap" x1="0" x2="1"><stop offset="0" stop-color="#6F5A33"/><stop offset=".35" stop-color="#E3C58A"/><stop offset=".7" stop-color="#B08D57"/><stop offset="1" stop-color="#5E4B2A"/></linearGradient>
+        <linearGradient id="liq" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E3C58A"/><stop offset="1" stop-color="#8A6C3F"/></linearGradient>
+        <linearGradient id="gl" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset=".5" stop-color="#fff" stop-opacity=".04"/><stop offset="1" stop-color="#fff" stop-opacity=".18"/></linearGradient>
+      </defs>
+      <rect x="42" y="4" width="36" height="30" rx="5" fill="url(#cap)"/><rect x="51" y="34" width="18" height="14" fill="#4A4550"/>
+      <rect x="12" y="46" width="96" height="146" rx="20" fill="#2A262E" stroke="#8F8A96" stroke-width="1.5"/>
+      <rect x="16" y="84" width="88" height="104" rx="16" fill="url(#liq)"/><rect x="12" y="46" width="96" height="146" rx="20" fill="url(#gl)"/>
+      <rect x="22" y="58" width="7" height="112" rx="3.5" fill="#fff" opacity=".28"/><rect x="36" y="108" width="50" height="44" rx="3" fill="#FAF7F2" opacity=".92"/>
+    </svg>
+    <h1>Chạm để trải nghiệm hương thơm</h1>
+    <p>Chọn mùi hương bạn thích, thanh toán bằng QR và nhận một lần xịt thử.</p>
+    <button class="btn" id="idle-start">Bắt đầu</button>
+    <p id="idle-price"></p>
+  </section>
+
+  <section id="s-blocked" class="center">
+    <div class="brand" data-brand>ScentStation</div>
+    <svg class="icon" viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="52" fill="none" stroke="#E0B25A" stroke-width="5"/><rect x="55" y="30" width="10" height="38" rx="5" fill="#E0B25A"/><circle cx="60" cy="84" r="6" fill="#E0B25A"/></svg>
+    <h1>Máy tạm ngưng phục vụ</h1>
+    <p>Hiện chưa thể nhận đơn mới. Xin lỗi vì sự bất tiện này.</p>
+    <div class="panel"><p>Mã máy</p><div class="price" id="blocked-serial"></div><p class="muted" id="blocked-reason" style="font-size:clamp(12px,1.8vw,20px)"></p></div>
+  </section>
+
+  <section id="s-choose">
+    <div class="row"><button class="btn ghost" style="width:auto" data-go="idle">Quay lại</button><div class="brand" data-brand>ScentStation</div></div>
+    <h1>Chọn hương thơm</h1>
+    <p>Chạm vào một mùi hương để xem chi tiết. Mỗi lần trải nghiệm là một lần xịt.</p>
+    <div class="grid" id="choose-grid"></div>
+    <p style="text-align:center;font-size:clamp(12px,1.8vw,22px)">Tự quay về màn hình chờ sau 60 giây không thao tác</p>
+  </section>
+
+  <section id="s-confirm">
+    <div class="row"><button class="btn ghost" style="width:auto" data-go="choose">Quay lại</button><div class="brand" data-brand>ScentStation</div></div>
+    <h1 id="cf-name"></h1>
+    <p id="cf-desc"></p>
+    <div class="notes3">
+      <div class="panel"><b>Hương đầu</b><span id="cf-top"></span></div>
+      <div class="panel"><b>Hương giữa</b><span id="cf-mid"></span></div>
+      <div class="panel"><b>Hương cuối</b><span id="cf-base"></span></div>
+    </div>
+    <div class="panel" style="border:2px solid var(--line)"><b>Cách trải nghiệm</b><p id="cf-usage"></p></div>
+    <div style="flex:1"></div>
+    <div class="panel row"><div><p>1 lần xịt thử</p><p>Giá cố định khi tạo đơn</p></div><div class="price" style="font-size:clamp(28px,6vw,64px)" id="cf-price"></div></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:1.5vh">
+      <button class="btn" id="cf-go">Xác nhận và tạo mã QR</button>
+      <button class="btn ghost" data-go="choose">Chọn mùi hương khác</button>
+      <p class="err" id="cf-err"></p>
+    </div>
+  </section>
+
+  <section id="s-pay" class="center">
+    <div class="brand" data-brand>ScentStation</div>
+    <h2 id="pay-title">Quét mã để thanh toán</h2>
+    <div class="qr"><div id="pay-qr"></div></div>
+    <div class="price" style="font-size:clamp(28px,6vw,64px)" id="pay-amount"></div>
+    <p id="pay-product"></p>
+    <span class="status" id="pay-status">Đang chờ thanh toán…</span>
+    <p id="pay-left"></p>
+    <p class="err" id="pay-err"></p>
+    <button class="btn ghost" id="pay-cancel">Hủy</button>
+  </section>
+
+  <section id="s-dispensing" class="center">
+    <div class="brand" data-brand>ScentStation</div>
+    <h2>Chuẩn bị xịt</h2>
+    <p>Đặt cổ tay hoặc que thử vào khay xịt bên dưới màn hình. Máy chỉ xịt đúng một lần.</p>
+    <div class="spinner"></div>
+    <span class="status" id="dp-status">Đã nhận thanh toán, đang xịt…</span>
+  </section>
+
+  <section id="s-success" class="center">
+    <div class="brand" data-brand>ScentStation</div>
+    <svg class="icon" viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="52" fill="none" stroke="#4FB38A" stroke-width="5"/><path d="M36 62 L54 80 L86 42" fill="none" stroke="#4FB38A" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <h1>Hoàn tất. Cảm ơn bạn</h1>
+    <p>Chúc bạn tìm được mùi hương yêu thích.</p>
+    <button class="btn" data-go="idle">Về màn hình chính</button>
+  </section>
+
+  <section id="s-failed" class="center">
+    <div class="brand" data-brand>ScentStation</div>
+    <svg class="icon" viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="52" fill="none" stroke="#E0B25A" stroke-width="5"/><rect x="55" y="30" width="10" height="38" rx="5" fill="#E0B25A"/><circle cx="60" cy="84" r="6" fill="#E0B25A"/></svg>
+    <h1>Đã thanh toán nhưng chưa xịt được</h1>
+    <p>Xin đừng thanh toán lại. Đơn của bạn đã được chuyển cho nhân viên để hoàn tiền hoặc xử lý.</p>
+    <div class="panel"><p>Mã đơn của bạn</p><div class="price" id="fl-code"></div></div>
+    <p id="fl-msg"></p>
+    <button class="btn" data-go="idle">Về màn hình chính</button>
+  </section>
+
+  <div class="dev" id="dev" hidden><button id="dev-pay">Giả lập thanh toán (demo)</button></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+(function () {
+  'use strict';
+  var params = new URLSearchParams(location.search);
+  if (params.get('serial')) {
+    localStorage.setItem('ss_serial', params.get('serial'));
+    localStorage.setItem('ss_secret', params.get('secret') || '');
+  }
+  if (params.get('dev') === '1') localStorage.setItem('ss_dev', '1');
+  if (params.get('dev') === '0') localStorage.removeItem('ss_dev');
+  if (params.get('serial') || params.get('dev')) history.replaceState(null, '', location.pathname);   // do not leave the secret in the address bar
+
+  var serial = localStorage.getItem('ss_serial') || '';
+  var secret = localStorage.getItem('ss_secret') || '';
+  var DEV = localStorage.getItem('ss_dev') === '1';
+
+  var $ = function (s) { return document.querySelector(s); };
+  var money = function (v) { return Number(v).toLocaleString('vi-VN') + 'đ'; };
+  var screens = ['config', 'idle', 'blocked', 'choose', 'confirm', 'pay', 'dispensing', 'success', 'failed'];
+  var current = null, idleTimer = null, pollTimer = null, tickTimer = null, retryTimer = null;
+  var catalog = null, selected = null, order = null;
+
+  function clearTimers(keepPoll) {
+    [idleTimer, tickTimer, retryTimer].forEach(function (t) { if (t) { clearTimeout(t); clearInterval(t); } });
+    idleTimer = tickTimer = retryTimer = null;
+    if (!keepPoll && pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+  }
+  function show(name, autoIdleSeconds, keepPoll) {
+    clearTimers(keepPoll);
+    current = name;
+    screens.forEach(function (s) { $('#s-' + s).classList.toggle('on', s === name); });
+    $('#dev').hidden = !(DEV && name === 'pay');
+    if (name === 'choose' || name === 'confirm') armIdle(60);
+    if (autoIdleSeconds) idleTimer = setTimeout(function () { goIdle(); }, autoIdleSeconds * 1000);
+  }
+  function armIdle(sec) { if (idleTimer) clearTimeout(idleTimer); idleTimer = setTimeout(function () { goIdle(); }, sec * 1000); }
+  document.addEventListener('pointerdown', function () { if (current === 'choose' || current === 'confirm') armIdle(60); });
+
+  function text(el, v) { el.textContent = v == null || v === '' ? '—' : v; }   // textContent only: product names are never parsed as HTML
+
+  function api(method, path, body) {
+    return fetch('/api/v1' + path, {
+      method: method,
+      headers: { 'Content-Type': 'application/json', 'X-Device-Serial': serial, 'X-Device-Secret': secret },
+      body: body ? JSON.stringify(body) : undefined
+    }).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (j) {
+        if (!r.ok) { var e = new Error((j.error && j.error.message) || ('HTTP ' + r.status)); e.status = r.status; e.code = j.error && j.error.code; throw e; }
+        return j.data;
+      });
+    });
+  }
+
+  // ---------------------------------------------------------------- idle / catalog
+  function loadCatalog() {
+    return api('GET', '/kiosk/catalog').then(function (c) { catalog = c; return c; });
+  }
+  function goIdle() {
+    selected = null; order = null;
+    if (!serial || !secret) { show('config'); return; }
+    loadCatalog().then(function (c) {
+      if (!c.orderable) { showBlocked(c.reason); return; }
+      var prices = c.items.map(function (i) { return Number(i.slot.price); });
+      text($('#idle-price'), prices.length ? 'Mỗi lần xịt từ ' + money(Math.min.apply(null, prices)) + ' · Thanh toán bằng ứng dụng ngân hàng' : '');
+      show('idle');
+      retryTimer = setTimeout(goIdle, 15000);          // keep checking that the machine can still sell
+    }).catch(function (e) {
+      if (e.status === 401) { localStorage.removeItem('ss_secret'); secret = ''; show('config'); $('#cfg-err').textContent = 'Mã máy hoặc khóa thiết bị không đúng.'; return; }
+      showBlocked('Không kết nối được máy chủ');
+    });
+  }
+  function showBlocked(reason) {
+    show('blocked');
+    text($('#blocked-serial'), serial);
+    text($('#blocked-reason'), reason || '');
+    retryTimer = setTimeout(goIdle, 10000);
+  }
+
+  // ---------------------------------------------------------------- choose
+  function renderChoose() {
+    var grid = $('#choose-grid'); grid.textContent = '';
+    if (!catalog.items.length) { var p = document.createElement('p'); p.textContent = 'Hiện chưa có mùi hương nào sẵn sàng.'; grid.appendChild(p); }
+    catalog.items.forEach(function (item) {
+      var b = document.createElement('button'); b.className = 'card'; b.type = 'button';
+      var n = document.createElement('div'); n.className = 'name'; n.textContent = item.product.name;
+      var d = document.createElement('div'); d.className = 'notes';
+      d.textContent = [item.product.top_notes, item.product.middle_notes, item.product.base_notes].filter(Boolean).join(' · ');
+      var f = document.createElement('div'); f.className = 'foot';
+      var pr = document.createElement('span'); pr.className = 'price'; pr.textContent = money(item.slot.price);
+      var st = document.createElement('span'); st.className = 'tag';
+      var low = item.slot.estimated_remaining_sprays <= item.slot.low_stock_threshold;
+      st.textContent = low ? 'Sắp hết' : 'Còn hàng'; if (!low) { st.style.color = 'var(--muted)'; }
+      f.appendChild(pr); f.appendChild(st);
+      b.appendChild(n); b.appendChild(d); b.appendChild(f);
+      b.addEventListener('click', function () { selected = item; renderConfirm(); show('confirm'); });
+      grid.appendChild(b);
+    });
+  }
+
+  function renderConfirm() {
+    var p = selected.product;
+    text($('#cf-name'), p.name); text($('#cf-desc'), p.description);
+    text($('#cf-top'), p.top_notes); text($('#cf-mid'), p.middle_notes); text($('#cf-base'), p.base_notes);
+    text($('#cf-usage'), p.usage_instructions || 'Sau khi thanh toán, đặt cổ tay hoặc que thử vào khay xịt bên dưới màn hình. Máy chỉ xịt đúng một lần.');
+    text($('#cf-price'), money(selected.slot.price));
+    $('#cf-err').textContent = '';
+  }
+
+  // ---------------------------------------------------------------- order + payment
+  var creating = false;
+  function createOrder() {
+    if (creating) return;                              // double tap must not create two orders
+    creating = true; $('#cf-go').disabled = true;
+    api('POST', '/kiosk/orders', { slot_number: selected.slot.slot_number }).then(function (d) {
+      order = d; startPayment();
+    }).catch(function (e) {
+      $('#cf-err').textContent = e.message || 'Không tạo được đơn';
+      if (e.status === 422 || e.status === 409) { loadCatalog().then(function () { renderChoose(); }).catch(function () {}); }
+    }).then(function () { creating = false; $('#cf-go').disabled = false; });
+  }
+
+  function startPayment() {
+    show('pay');
+    text($('#pay-amount'), money(order.order.price));
+    text($('#pay-product'), selected.product.name);
+    text($('#pay-status'), 'Đang chờ thanh toán…');
+    $('#pay-err').textContent = '';
+    var box = $('#pay-qr'); box.textContent = '';
+    if (window.QRCode) { new QRCode(box, { text: order.payment.qr_content, width: 300, height: 300, correctLevel: QRCode.CorrectLevel.M }); }
+    else { var t = document.createElement('div'); t.className = 'qrtext'; t.textContent = order.payment.qr_content; box.appendChild(t); }
+    var expires = new Date(order.order.expires_at + (/Z|[+-]\d\d:?\d\d$/.test(order.order.expires_at) ? '' : 'Z')).getTime();
+    tickTimer = setInterval(function () {
+      var left = Math.max(0, Math.round((expires - Date.now()) / 1000));
+      text($('#pay-left'), 'Mã hết hạn sau ' + Math.floor(left / 60) + ':' + String(left % 60).padStart(2, '0'));
+    }, 1000);
+    var misses = 0;
+    pollTimer = setInterval(function () {
+      api('GET', '/kiosk/orders/' + encodeURIComponent(order.order.order_code)).then(function (s) {
+        misses = 0; $('#pay-err').textContent = '';
+        onOrderStatus(s);
+      }).catch(function () {
+        misses += 1; if (misses >= 3) $('#pay-err').textContent = 'Mất kết nối, đang thử lại…';
+      });
+    }, 2000);
+  }
+
+  function onOrderStatus(s) {
+    var st = s.order.status;
+    if (st === 'PAID' || st === 'DISPENSING') {
+      if (current !== 'dispensing') show('dispensing', 0, true);
+      text($('#dp-status'), st === 'PAID' ? 'Đã nhận thanh toán, đang gửi lệnh cho máy…' : 'Máy đang xịt…');
+    } else if (st === 'DISPENSED') {
+      show('success', 12);
+    } else if (st === 'MANUAL_REVIEW' || st === 'DISPENSE_FAILED' || st === 'UNCERTAIN' || st === 'REFUNDED') {
+      show('failed', 45);
+      text($('#fl-code'), s.order.order_code); text($('#fl-msg'), s.message);
+    } else if (st === 'EXPIRED' || st === 'CANCELLED') {
+      text($('#pay-status'), st === 'EXPIRED' ? 'Mã đã hết hạn' : 'Thanh toán không thành công');
+      clearInterval(pollTimer); pollTimer = null;
+      idleTimer = setTimeout(function () { goIdle(); }, 6000);
+    }
+  }
+
+  // ---------------------------------------------------------------- wiring
+  document.querySelectorAll('[data-go]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var to = b.getAttribute('data-go');
+      if (to === 'idle') goIdle();
+      else if (to === 'choose') { renderChoose(); show('choose'); }
+    });
+  });
+  $('#idle-start').addEventListener('click', function () { clearTimers(); renderChoose(); show('choose'); });
+  $('#cf-go').addEventListener('click', createOrder);
+  $('#pay-cancel').addEventListener('click', function () { goIdle(); });
+  $('#cfg-save').addEventListener('click', function () {
+    serial = $('#cfg-serial').value.trim(); secret = $('#cfg-secret').value;
+    if (!serial || !secret) { $('#cfg-err').textContent = 'Vui lòng nhập đủ hai ô.'; return; }
+    localStorage.setItem('ss_serial', serial); localStorage.setItem('ss_secret', secret); $('#cfg-err').textContent = ''; goIdle();
+  });
+  $('#dev-pay').addEventListener('click', function () {
+    if (!order) return;
+    fetch('/api/v1/dev/mock-payment', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ payment_reference: order.payment.payment_reference }) })
+      .then(function (r) { if (!r.ok) $('#pay-err').textContent = 'Mock payment đang tắt (MOCK_PAYMENT_ENABLED).'; });
+  });
+
+  $('#cfg-serial').value = serial;
+  goIdle();
+})();
+</script>
+</body>
+</html>

@@ -20,11 +20,12 @@ def health():
 @login_required
 def run_jobs():
     """Run the background jobs once (Super Admin): expire unpaid orders, time out stuck dispense commands,
-    mark silent machines OFFLINE. In production call it every minute from cron / a scheduler."""
+    mark silent machines OFFLINE, open tickets for CRITICAL hardware alerts. In production call it every minute from cron / a scheduler."""
     g.ctx.require_permission(P.JOBS_RUN)
     return ok({"expired_orders": container.order_service().expire_overdue(),
                "timed_out_commands": container.dispensing_service().expire_stale_commands(),
-               "machines_changed": container.machine_service().refresh_connectivity()})
+               "machines_changed": container.machine_service().refresh_connectivity(),
+               "tickets_created": container.maintenance_service().sync_tickets_from_alerts()})
 
 
 @system_bp.route("/audit-logs", methods=["GET"])

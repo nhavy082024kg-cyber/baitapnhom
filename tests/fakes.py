@@ -116,6 +116,7 @@ class Machines(Mem, I.IMachineRepository):
     def __init__(self):
         super().__init__()
         self.critical_ticket = set()
+        self.tickets = None                       # set by build_world: same rule as the SQL query
 
     def add(self, m): return self._add(m)
     def get(self, t, i): return self._one(lambda r: r.id == i and r.tenant_id == t)
@@ -123,7 +124,11 @@ class Machines(Mem, I.IMachineRepository):
     def get_by_serial(self, s): return self._one(lambda r: r.serial_number == s)
     def list(self, t): return [m for m in self._all() if t is None or m.tenant_id == t]
     def update(self, m): return self._save(m)
-    def has_critical_open_ticket(self, i): return i in self.critical_ticket
+    def has_critical_open_ticket(self, i):
+        if i in self.critical_ticket:
+            return True
+        return self.tickets is not None and any(
+            t.machine_id == i and t.severity == "CRITICAL" and t.status != "CLOSED" for t in self.tickets._all())
 
 
 class Slots(Mem, I.ISlotRepository):
@@ -174,12 +179,17 @@ class Orders(Mem, I.IOrderRepository):
     def list_overdue_awaiting_payment(self, now):
         return [o for o in self._all() if o.status == "AWAITING_PAYMENT" and o.expires_at <= now]
 
+    def list_between(self, t, start, end):
+        return [o for o in self._all() if (t is None or o.tenant_id == t) and start <= o.created_at < end]
+
 
 class Payments(Mem, I.IPaymentRepository):
     def add(self, p): return self._add(p)
     def get_by_reference(self, r): return self._one(lambda x: x.payment_reference == r)
     def get_by_order(self, i): return self._one(lambda x: x.order_id == i)
     def update(self, p): return self._save(p)
+    def list_between(self, t, start, end):
+        return [p for p in self._all() if p.tenant_id == t and start <= p.created_at < end]
 
 
 class Webhooks(I.IWebhookEventRepository):
@@ -247,12 +257,59 @@ class Alerts(Mem, I.IAlertRepository):
     def update(self, a): return self._save(a)
 
 
+class Tickets(Mem, I.ITicketRepository):
+    def __init__(self):
+        super().__init__()
+        self.items = Mem()
+
+    def add(self, t): return self._add(t)
+    def get(self, tenant, i): return self._one(lambda r: r.id == i and r.tenant_id == tenant)
+    def find_by_alert(self, a): return self._one(lambda r: r.alert_id == a and a is not None)
+    def update(self, t): return self._save(t)
+
+    def list(self, tenant, status=None, machine_id=None, assigned_to=None, limit=100):
+        return [t for t in self._all() if t.tenant_id == tenant and (status is None or t.status == status)
+                and (machine_id is None or t.machine_id == machine_id)
+                and (assigned_to is None or t.assigned_to == assigned_to)][:limit]
+
+    def add_item(self, i): return self.items._add(i)
+    def get_item(self, tenant, i): return self.items._one(lambda r: r.id == i and r.tenant_id == tenant)
+    def list_items(self, tid): return [i for i in self.items._all() if i.ticket_id == tid]
+    def update_item(self, i): return self.items._save(i)
+
+
+class Promotions(Mem, I.IPromotionRepository):
+    def add(self, p): return self._add(p)
+    def get(self, t, i): return self._one(lambda r: r.id == i and r.tenant_id == t)
+    def update(self, p): return self._save(p)
+    def list(self, t, status=None):
+        return [p for p in self._all() if p.tenant_id == t and (status is None or p.status == status)]
+
+    def list_active(self, t, now):
+        return [p for p in self._all() if p.tenant_id == t and p.status == "ACTIVE" and p.starts_at <= now < p.ends_at]
+
+
 class Audit(Mem, I.IAuditRepository):
     def add(self, l): return self._add(l)
 
     def search(self, t, action=None, order_id=None, limit=100):
         return [l for l in self._all() if (t is None or l.tenant_id == t) and (action is None or l.action == action)
                 and (order_id is None or l.order_id == order_id)][:limit]
+
+
+def _test_token_service():
+    from infrastructure.services.security_service import TokenService
+    import jwt
+
+    class TestTokenService(TokenService):
+        """The tests run on a fake clock (tests/fakes.Clock). PyJWT checks `exp` against the REAL clock, which would
+        make every test fail on another day, so only the library-level expiry check is skipped here: the
+        service still compares session.expires_at with the injected clock."""
+
+        def decode(self, token):
+            return jwt.decode(token, self.secret_key, algorithms=["HS256"], options={"verify_exp": False})
+
+    return TestTokenService
 
 
 def build_world():
@@ -266,18 +323,24 @@ def build_world():
     from services.dispensing_service import DispensingService
     from services.inventory_service import InventoryService
     from services.machine_service import MachineService
+    from services.maintenance_service import MaintenanceService
+    from services.promotion_service import PromotionService
+    from services.report_service import ReportService
     from services.order_service import OrderService
     from services.order_workflow import OrderWorkflow
     from services.payment_service import PaymentService
     from services.tenant_service import TenantService
     from services.user_service import UserService
 
+    TestTokenService = _test_token_service()
     w, clock, settings, uow = SimpleNamespace(), Clock(), ServiceSettings(), UoW()
     r = SimpleNamespace(tenants=Tenants(), users=Users(), sessions=Sessions(), products=Products(),
                         locations=Locations(), machines=Machines(), slots=Slots(), inventory=Inventory(),
                         orders=Orders(), payments=Payments(), webhooks=Webhooks(), refunds=Refunds(),
-                        commands=Commands(), device_data=DeviceData(), alerts=Alerts(), audit=Audit())
-    hasher, tokens = PasswordHasher(), TokenService("test-secret-key-test-secret-key-123")
+                        commands=Commands(), device_data=DeviceData(), alerts=Alerts(), audit=Audit(),
+                        tickets=Tickets(), promotions=Promotions())
+    r.machines.tickets = r.tickets
+    hasher, tokens = PasswordHasher(), TestTokenService("test-secret-key-test-secret-key-123")
     devices, provider = DeviceSecurity("master-key"), MockPaymentProvider("webhook-secret")
     now = clock.now
     audit = AuditService(r.audit, now)
@@ -296,7 +359,11 @@ def build_world():
         machines=MachineService(r.machines, r.slots, r.products, r.locations, r.device_data, devices, alerts,
                                 audit, uow, settings, now),
         orders=OrderService(r.orders, r.payments, r.slots, r.products, r.machines, r.refunds, r.commands,
-                            provider, workflow, audit, uow, settings, now),
+                            provider, workflow, audit, uow, settings, now, promotions=r.promotions),
         payments=PaymentService(r.payments, r.orders, r.webhooks, provider, workflow, dispensing, audit, uow, now),
+        maintenance=MaintenanceService(r.tickets, r.machines, r.users, r.alerts, audit, uow, now),
+        promotions=PromotionService(r.promotions, r.products, r.machines, r.locations, audit, uow, now),
+        reports=ReportService(r.orders, r.payments, r.machines, r.slots, r.products, r.tenants, r.inventory,
+                              r.alerts, r.tickets, audit, uow, settings, now),
     )
     return w
