@@ -1,32 +1,5 @@
 # Kiến trúc hệ thống ScentStation
-
 ## 1. Bức tranh tổng thể
-
-```mermaid
-flowchart LR
-    subgraph Client
-        KUI[Kiosk UI<br/>touch screen]
-        WEB[Web Portal<br/>Figma -> FE]
-    end
-    subgraph Device
-        SIM[Device Simulator<br/>thay phần cứng]
-    end
-    PAY[Payment Provider<br/>mock]
-    subgraph Backend[Flask Backend]
-        API[api: controllers, schemas, middleware]
-        SVC[services: use case]
-        DOM[domain: entity, interface, state machine, policy]
-        INF[infrastructure: ORM, repository, security]
-    end
-    DB[(MySQL 8)]
-    KUI -->|X-Device-Serial/Secret| API
-    WEB -->|JWT| API
-    SIM -->|poll heartbeat, commands| API
-    PAY -->|webhook + HMAC| API
-    API --> SVC --> DOM
-    INF -.cài đặt interface.-> DOM
-    SVC --> INF --> DB
-```
 
 Phần cứng được thay bằng **simulator** (`simulator/device_simulator.py`) giao tiếp HTTP pull. Thanh toán là **mock** ký HMAC. Cả hai thay được bằng thật mà không sửa service nhờ interface (`IPaymentProvider`, repository).
 

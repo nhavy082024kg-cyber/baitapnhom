@@ -4,7 +4,7 @@ Mình không thao tác trực tiếp trong Figma được, nên file này là **
 
 ## 1. Link Figma
 https://www.figma.com/proto/4oBf2AuukackKOwgB4XA3Z/ScentStation-UI?node-id=4-2&t=iqPEPfEjn7wdbjzu-0&scaling=min-zoom&content-scaling=fixed&page-id=0%3A1&starting-point-node-id=4%3A2&show-proto-sidebar=1
-```
+
 ## 2. Design tokens đề xuất (phong cách nước hoa: sang, tối giản)
 
 | Token | Giá trị | Dùng cho |

@@ -1,8 +1,7 @@
 # ScentStation – Backend (Flask Clean Architecture + MySQL)
 
 Backend cho đề tài **ScentStation**: kiosk nước hoa đa thương hiệu. Xây theo khuôn Flask-CleanArchitecture
-(`api → services → domain ← infrastructure`), đầu vào là `docs/ERD.md` (29 bảng).
-
+(`api → services → domain ← infrastructure`)
 ## 1. Chạy thử
 
 Yêu cầu: Python 3.10+, Docker (cho MySQL).
